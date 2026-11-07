@@ -164,7 +164,7 @@ html[data-theme="dark"]:lang(en) .framework-en-dark{display:block;}
 .framework-dialog .research-figure{width:100%;max-width:none;margin:0;}
 .framework-dialog .research-figure img{max-height:calc(90dvh - 110px);object-fit:contain;}
 html.framework-open{overflow:hidden;}
-@media(max-width:760px){.framework-dialog{width:90%;padding:44px 12px 12px;border-radius:10px;}.framework-dialog-header{top:7px;left:12px;right:8px;min-height:28px;justify-content:space-between;}.framework-dialog-header h2{position:static;width:auto;height:auto;padding:0;margin:0;overflow:visible;clip-path:none;white-space:normal;flex:1;min-width:0;font-size:15px;line-height:1.35;font-weight:600;}.framework-close{width:28px;height:28px;font-size:24px;}}
+@media(max-width:760px){.framework-dialog{width:90%;padding:38px 12px 12px;border-radius:10px;}.framework-dialog-header{top:7px;left:12px;right:8px;min-height:28px;justify-content:space-between;}.framework-dialog-header h2{position:static;width:auto;height:auto;padding:0;margin:0;overflow:visible;clip-path:none;white-space:normal;flex:1;min-width:0;font-size:15px;line-height:1.35;font-weight:600;}.framework-close{width:28px;height:28px;font-size:24px;}}
 
 /* Expandable abstract previews. */
 .publication{row-gap:18px;}
@@ -328,21 +328,16 @@ function loadFrameworkImage(){
  const image=frameworkDialog.querySelector('.framework-'+suffix);
  if(image && !image.hasAttribute('src')) image.src=image.getAttribute('data-src');
 }
-// Wait 100 ms after the page finishes loading (and after each language/theme change).
-// The cover images are inline WebP; only the selected framework begins loading.
-let frameworkPreloadTimer=null;
+// Preload the matching research framework immediately once the page has loaded,
+// and immediately after a language/theme change; no artificial delay.
 function frameworkVariant(){
   return (english?'en':'zh')+'-'+(dark?'dark':'light');
 }
-function scheduleFrameworkPreload(){
-  if(frameworkPreloadTimer!==null) clearTimeout(frameworkPreloadTimer);
-  frameworkPreloadTimer=setTimeout(()=>{
-    frameworkPreloadTimer=null;
-    const target=frameworkDialog.querySelector('.framework-'+frameworkVariant());
-    // These img elements are eager, but initially have no src. Assigning the
-    // source in the background starts one real request even while dialog is hidden.
-    if(target && !target.hasAttribute('src')) target.src=target.getAttribute('data-src');
-  },100);
+function preloadFrameworkForCurrentMode(){
+  const target=frameworkDialog.querySelector('.framework-'+frameworkVariant());
+  // Start one real request for the selected version; previously loaded images
+  // remain cached for subsequent switches.
+  if(target && !target.hasAttribute('src')) target.src=target.getAttribute('data-src');
 }
 function renderBiography(){
  syncAbstractLabels();
@@ -386,18 +381,18 @@ document.getElementById('theme').onclick=()=>{
   manualTheme=true;
   try { window.localStorage.setItem('academic-theme', dark ? 'dark' : 'light'); } catch (e) {}
   render();
-  scheduleFrameworkPreload();
+  preloadFrameworkForCurrentMode();
 };
 document.getElementById('language').onclick=()=>{
   english=!english;
   try { window.localStorage.setItem(languagePreferenceKey, english ? 'en' : 'zh'); } catch (e) {}
   render();
-  scheduleFrameworkPreload();
+  preloadFrameworkForCurrentMode();
 };
 // 未手动设定时，系统外观改变可即时同步。
 if (systemTheme) {
   const syncSystemTheme=(event)=>{
-    if (!manualTheme) { dark=event.matches;render();scheduleFrameworkPreload(); }
+    if (!manualTheme) { dark=event.matches;render();preloadFrameworkForCurrentMode(); }
   };
   if (typeof systemTheme.addEventListener==='function') {
     systemTheme.addEventListener('change',syncSystemTheme);
@@ -406,8 +401,9 @@ if (systemTheme) {
   }
 }
 render();
-// Start the initial 100ms delay only once all HTML and embedded cover images have loaded.
-window.addEventListener('load',scheduleFrameworkPreload,{once:true});
+// Preload immediately when the page finishes loading (no timeout).
+if(document.readyState==='complete') preloadFrameworkForCurrentMode();
+else window.addEventListener('load',preloadFrameworkForCurrentMode,{once:true});
 </script><script>document.querySelectorAll('.journal-cover-real img').forEach(img=>{
   img.addEventListener('error',()=>{img.style.display='none';});
 });</script></body></html>
