@@ -218,11 +218,11 @@ img { -webkit-tap-highlight-color:transparent; }
 
 /* Desktop and mobile now use identical dialog heading, button and inner spacing. */
 
-/* v67: match email blue for the framework link and journal names. */
-.framework-link{color:#1765C1;font-weight:700}
-.paper-journal{color:#1765C1}
+/* v96: restore the original green for the framework hyperlink and journal titles. */
+.framework-link{color:var(--teal);font-weight:700}
+.paper-journal{color:var(--teal)}
 :root[data-theme="dark"] .framework-link,
-:root[data-theme="dark"] .paper-journal{color:#91B3F3}
+:root[data-theme="dark"] .paper-journal{color:var(--teal)}
 
 /* v83 — iOS-inspired liquid glass, only for the research-framework dialog. */
 .framework-dialog{
