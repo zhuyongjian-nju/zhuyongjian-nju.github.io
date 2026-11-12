@@ -5,10 +5,10 @@
 <script>
 /* 在页面绘制前确定主题，避免先显示亮色再闪到暗色。 */
 (function () {
-  var saved = null;
-  try { saved = window.localStorage.getItem('academic-theme'); } catch (e) {}
+  // 清除旧版保存的手动主题；每次打开网页均跟随系统外观。
+  try { window.localStorage.removeItem('academic-theme'); } catch (e) {}
   var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  var theme = (saved === 'dark' || saved === 'light') ? saved : (prefersDark ? 'dark' : 'light');
+  var theme = prefersDark ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', theme);
   document.documentElement.style.colorScheme = theme;
   /* 同步设置初始语言，确保个人简介内的链接在首帧就已渲染。 */
@@ -513,9 +513,8 @@ img { -webkit-tap-highlight-color:transparent; }
 <script>
 const root=document.documentElement;
 const systemTheme=window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-let savedTheme=null;
-try { savedTheme=localStorage.getItem('academic-theme'); } catch (e) {}
-let manualTheme=(savedTheme==='dark'||savedTheme==='light');
+// 手动主题仅对当前打开的页面有效；刷新后恢复自动跟随系统。
+let manualTheme=false;
 let dark=root.getAttribute('data-theme')==='dark';
 let english=root.lang==='en';
 const frameworkDialog=document.getElementById('framework-dialog');
@@ -561,7 +560,6 @@ document.querySelectorAll('.abstract-toggle').forEach(button=>{
 document.getElementById('theme').addEventListener('click',()=>{
   dark=!dark;
   manualTheme=true;
-  try{localStorage.setItem('academic-theme',dark?'dark':'light')}catch(e){}
   root.setAttribute('data-theme',dark?'dark':'light');
   root.style.colorScheme=dark?'dark':'light';
   document.getElementById('theme-svg').innerHTML=dark
